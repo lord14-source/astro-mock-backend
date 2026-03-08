@@ -43,7 +43,8 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/auth/**", "/astro/kundali/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("astro/astrologerlist/").permitAll()
                         .anyRequest().authenticated()
                 )
 

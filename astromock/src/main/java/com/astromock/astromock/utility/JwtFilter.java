@@ -50,7 +50,7 @@ public class JwtFilter extends OncePerRequestFilter {
             token = header.substring(7);
 
             try {
-                username = jwt.extract(token);
+                username = jwt.extractEmail(token);
             } catch (Exception e) {
                 System.out.println("❌ Token extraction failed: " + e.getMessage());
             }

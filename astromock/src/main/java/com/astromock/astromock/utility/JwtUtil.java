@@ -19,37 +19,34 @@ public class JwtUtil {
 
     private Key key;
 
-    // ✅ Initialize key AFTER secret injection
     @PostConstruct
     public void init() {
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    // ✅ Generate JWT
+    // ================= GENERATE TOKEN =================
     public String generate(String email) {
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
                 .setExpiration(
-                        new Date(System.currentTimeMillis() + 86400000) // 24h
+                        new Date(System.currentTimeMillis() + 86400000) // 24 hours
                 )
                 .signWith(key)
                 .compact();
     }
 
-    // ✅ Extract username/email
-    public String extract(String token) {
+    // ================= EXTRACT EMAIL =================
+    public String extractEmail(String token) {
         return getClaims(token).getSubject();
     }
 
-    // ✅ Validate token
+    // ================= VALIDATE TOKEN =================
     public boolean isValid(String token, UserDetails user) {
         try {
-            String username = extract(token);
-
+            String username = extractEmail(token);
             return username.equals(user.getUsername())
                     && !isExpired(token);
-
         } catch (Exception e) {
             return false;
         }

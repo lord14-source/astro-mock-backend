@@ -23,4 +23,14 @@ public class BlogService {
     public List<Blog> getAllBlogs() {
         return blogRepository.findAll();
     }
+
+    public String deleteBlog(Long id) {
+
+        if (!blogRepository.existsById(id)) {
+            return "Blog not found with id: " + id;
+        }
+
+        blogRepository.deleteById(id);
+        return "Blog deleted successfully!";
+    }
 }

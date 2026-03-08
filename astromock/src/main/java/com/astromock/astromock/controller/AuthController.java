@@ -25,57 +25,73 @@ public class AuthController {
     @Autowired
     private PasswordEncoder encoder;
 
-    // -------- REGISTER --------
+    // ================= REGISTER =================
     @PostMapping("/register")
-    public ResponseEntity<?> register(
-            @RequestBody Users u) {
+    public ResponseEntity<?> register(@RequestBody Users u) {
 
         if (repo.findByEmail(u.getEmail()).isPresent()) {
-
-            return ResponseEntity
-                    .badRequest()
-                    .body(Map.of(
-                            "error",
-                            "User already exists"));
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "User already exists"));
         }
 
-        // encrypt password
-        u.setPassword(
-                encoder.encode(u.getPassword()));
+        // Encrypt password
+        u.setPassword(encoder.encode(u.getPassword()));
 
         repo.save(u);
 
         return ResponseEntity.ok(
-                Map.of("message",
-                        "Registered successfully"));
+                Map.of(
+                        "message", "Registered successfully",
+                        "name", u.getName()
+                )
+        );
     }
 
-    // -------- LOGIN --------
+    // ================= LOGIN =================
     @PostMapping("/login")
-    public ResponseEntity<?> login(
-            @RequestBody Map<String, String> req) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> req) {
 
         String email = req.get("email");
         String password = req.get("password");
 
-        Users user = repo.findByEmail(email)
-                .orElse(null);
+        Users user = repo.findByEmail(email).orElse(null);
 
-        if (user == null ||
-                !encoder.matches(
-                        password,
-                        user.getPassword())) {
-
-            return ResponseEntity
-                    .status(401)
-                    .body(Map.of(
-                            "error",
-                            "Invalid credentials"));
+        if (user == null || !encoder.matches(password, user.getPassword())) {
+            return ResponseEntity.status(401)
+                    .body(Map.of("error", "Invalid credentials"));
         }
 
         String token = jwt.generate(email);
 
         return ResponseEntity.ok(
-                Map.of("token", token));
+                Map.of(
+                        "token", token,
+                        "name", user.getName(),
+                        "email", user.getEmail()
+                )
+        );
+    }
+
+    // ================= GET CURRENT USER =================
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+
+        String token = authHeader.replace("Bearer ", "");
+        String email = jwt.extractEmail(token);
+
+        Users user = repo.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(404)
+                    .body(Map.of("error", "User not found"));
+        }
+        System.out.println(user.getName());
+        return ResponseEntity.ok(
+                Map.of(
+                        "name", user.getName(),
+                        "email", user.getEmail(),
+                        "phnno", user.getPhnno()
+                )
+        );
     }
 }

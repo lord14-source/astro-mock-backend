@@ -7,6 +7,16 @@ public class KundliRequest {
     private String time;
     private String place;
 
+    public String getFname() {
+        return fname;
+    }
+
+    public void setFname(String fname) {
+        this.fname = fname;
+    }
+
+    private String fname;
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 

@@ -4,8 +4,10 @@ import com.astromock.astromock.email_pdf.KundaliPDF;
 import com.astromock.astromock.model.*;
 import com.astromock.astromock.repository.AstrologerRepository;
 import com.astromock.astromock.services.*;
+import com.stripe.exception.StripeException;
 import io.jsonwebtoken.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,8 @@ public class AstrologyController {
     private final PoojaService poojaService;
     private final AstrologerRepository astrologerRepository;
     private final AstrologerListService astrologerListService;
+    @Autowired
+    private StripeService stripeService;
 
     @Autowired
     public AstrologyController(AstrologyService service,
@@ -76,7 +80,7 @@ public class AstrologyController {
     }
 
     // ✅ Kundli generate
-    @PostMapping("/kundli")
+    @PostMapping("/kundlii")
     public KundliResponse kundli(@RequestBody KundliRequest req) {
         return kundliService.generate(req);
     }
@@ -97,10 +101,9 @@ public class AstrologyController {
         return ResponseEntity.ok(consultService.consult(req));
     }
 
-    // ✅ Tarot draw card
-    @GetMapping("/draw")
-    public TarotCard drawCard() {
-        return tarotService.getRandomCard();
+    @PostMapping("/tarot")
+    public Map<String, Object> tarotReading() {
+        return tarotService.drawThreeCards();
     }
 
     // ✅ Pooja endpoints
@@ -192,6 +195,38 @@ public class AstrologyController {
         return blogService.getAllBlogs();
     }
 
-   
+    @DeleteMapping("/blog/{id}")
+    public ResponseEntity<String> deleteBlog(@PathVariable Long id) {
+        blogService.deleteBlog(id);
+        return ResponseEntity.ok("Deleted");
+    }
+    @PostMapping("/checkout")
+    public ResponseEntity<StripeResponse>doPayment(@RequestBody ProductRequest productRequest) throws StripeException {
+        return ResponseEntity.status(HttpStatus.OK).body(stripeService.checkoutProduct(productRequest));
+    }
 
+
+@Autowired
+private com.astromock.astromock.services.ProfileService getUserProfile;
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserProfileDto> getProfile(Authentication authentication) {
+
+        String email = authentication.getName(); // Extracted from JWT
+
+        UserProfileDto profile = getUserProfile.getUserProfile(email);
+
+        return ResponseEntity.ok(profile);
+    }
+    @PutMapping("/profileupdate")
+    public ResponseEntity<UserProfileDto> updateProfile(
+            Authentication authentication,
+            @RequestBody UpdateProfileDto dto) {
+
+        String email = authentication.getName();
+
+        UserProfileDto updated = getUserProfile.updateProfile(email, dto);
+
+        return ResponseEntity.ok(updated);
+    }
 }

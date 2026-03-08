@@ -3,31 +3,24 @@ package com.astromock.astromock.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "users")   // Recommended
-public class Users {
+@Table(name = "registration")   // Optional but recommended
+public class Registration {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
     private String email;
-
-    @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false)
     private String phnno;
 
-    // No-arg constructor (required by JPA)
-    public Users() {
+    // No-arg constructor (Required by JPA)
+    public Registration() {
     }
 
     // All-args constructor
-    public Users(Long id, String email, String password, String name, String phnno) {
+    public Registration(Long id, String email, String password, String name, String phnno) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -35,7 +28,7 @@ public class Users {
         this.phnno = phnno;
     }
 
-    // Getters & Setters
+    // Getters and Setters
 
     public Long getId() {
         return id;
