@@ -13,9 +13,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BlogService {
 
-    private final BlogRepository blogRepository;
+    private  final BlogRepository blogRepository;
+    
+    public BlogService(BlogRepository blogRepository) {
+		super();
+		this.blogRepository = blogRepository;
+	}
 
-    public Blog createBlog(Blog blog) {
+	public Blog createBlog(Blog blog) {
         blog.setCreatedAt(LocalDateTime.now());
         return blogRepository.save(blog);
     }

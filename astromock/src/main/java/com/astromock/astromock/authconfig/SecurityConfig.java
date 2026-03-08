@@ -20,10 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import org.springframework.web.cors.*;
-
-import java.util.List;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -35,15 +31,32 @@ public class SecurityConfig {
     public SecurityFilterChain security(HttpSecurity http) throws Exception {
 
         return http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> {}) // use CorsConfig class
                 .csrf(csrf -> csrf.disable())
+
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
+
+                        // Chat endpoints open
+                        .requestMatchers("/chat", "/chat/**").permitAll()
+                        .requestMatchers("/topic/**").permitAll()
+                        .requestMatchers("/app/**").permitAll()
+                        .requestMatchers("/api/chat/**").permitAll()
+                        .requestMatchers("/api/chat/history").permitAll()
+
+                        // H2 console
+                        .requestMatchers("/h2-console/**").permitAll()
+
+                        // OPTIONS requests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Auth APIs
                         .requestMatchers("/auth/**", "/astro/kundali/**").permitAll()
+
                         .anyRequest().authenticated()
                 )
 
@@ -51,31 +64,6 @@ public class SecurityConfig {
                         UsernamePasswordAuthenticationFilter.class)
 
                 .build();
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-
-        CorsConfiguration config = new CorsConfiguration();
-
-        config.setAllowedOrigins(
-                List.of("http://localhost:3000")
-        );
-
-        config.setAllowedMethods(
-                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")
-        );
-
-        config.setAllowedHeaders(List.of("*"));
-
-        config.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
-
-        source.registerCorsConfiguration("/**", config);
-
-        return source;
     }
 
     @Bean
@@ -93,5 +81,4 @@ public class SecurityConfig {
                         .build())
                 .orElseThrow();
     }
-
 }
